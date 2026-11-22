@@ -81,49 +81,82 @@ public class Referee extends AbstractReferee {
     }
 
     private void generateDungeon(Random rng) {
-        for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x < WIDTH; x++) {
-                grid[y][x] = '.';
+        int mid = WIDTH / 2;
+        for (int attempt = 0; attempt < 40; attempt++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                for (int x = 0; x < WIDTH; x++) {
+                    grid[y][x] = '.';
+                }
+            }
+            for (int y = 0; y < HEIGHT; y++) {
+                for (int x = 0; x <= mid; x++) {
+                    if (x == mid && y > HEIGHT / 2) continue;
+                    if (rng.nextDouble() < 0.22) {
+                        grid[y][x] = '#';
+                        grid[HEIGHT - 1 - y][WIDTH - 1 - x] = '#';
+                    }
+                }
+            }
+            // Clear spawn rooms & center
+            for (int y = 2; y <= 8; y++) {
+                grid[y][1] = '.';
+                grid[y][WIDTH - 2] = '.';
+            }
+            grid[mid][mid] = '.';
+
+            // Place 5 symmetric Relics (center + 2 seed-randomized symmetric pairs)
+            relics.clear();
+            int rid = 0;
+            int guardHp = (leagueLevel >= 3) ? 14 : 0;
+            relics.add(new Relic(rid++, mid, mid, 25, guardHp));
+
+            int rx1 = 2 + rng.nextInt(4); // 2..5
+            int ry1 = 1 + rng.nextInt(3); // 1..3
+            int rx2 = 2 + rng.nextInt(3); // 2..4
+            int ry2 = 2 + rng.nextInt(3); // 2..4
+            if (rx2 == rx1 && ry2 == ry1) {
+                ry2 = (ry1 % 4) + 1;
+            }
+            int[][] pairs = {{rx1, ry1}, {rx2, ry2}};
+            for (int[] p : pairs) {
+                int rx = p[0], ry = p[1];
+                grid[ry][rx] = '.';
+                grid[HEIGHT - 1 - ry][WIDTH - 1 - rx] = '.';
+                relics.add(new Relic(rid++, rx, ry, 15, guardHp));
+                relics.add(new Relic(rid++, WIDTH - 1 - rx, HEIGHT - 1 - ry, 15, guardHp));
+            }
+
+            if (isDungeonConnected()) {
+                return;
             }
         }
-        for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x <= WIDTH / 2; x++) {
-                if (x == WIDTH / 2 && y > HEIGHT / 2) continue;
-                if (rng.nextDouble() < 0.16) {
-                    grid[y][x] = '#';
-                    grid[HEIGHT - 1 - y][WIDTH - 1 - x] = '#';
+        // Fallback: guarantee open center & rim corridors
+        for (int i = 1; i < WIDTH - 1; i++) {
+            grid[mid][i] = '.';
+            grid[i][mid] = '.';
+        }
+    }
+
+    private boolean isDungeonConnected() {
+        boolean[][] vis = new boolean[HEIGHT][WIDTH];
+        Queue<int[]> q = new ArrayDeque<>();
+        vis[5][1] = true;
+        q.add(new int[]{1, 5});
+        while (!q.isEmpty()) {
+            int[] c = q.poll();
+            for (int d = 0; d < 4; d++) {
+                int nx = c[0] + DX[d], ny = c[1] + DY[d];
+                if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && grid[ny][nx] == '.' && !vis[ny][nx]) {
+                    vis[ny][nx] = true;
+                    q.add(new int[]{nx, ny});
                 }
             }
         }
-        // Carve guaranteed dungeon corridors
-        int mid = WIDTH / 2;
-        for (int i = 1; i < WIDTH - 1; i++) {
-            grid[mid][i] = '.';
-            grid[2][i] = '.';
-            grid[HEIGHT - 3][i] = '.';
-            grid[i][mid] = '.';
-            grid[i][2] = '.';
-            grid[i][WIDTH - 3] = '.';
+        if (!vis[5][WIDTH - 2]) return false;
+        for (Relic r : relics) {
+            if (!vis[r.getY()][r.getX()]) return false;
         }
-        // Clear spawn rooms
-        for (int y = 3; y <= 7; y++) {
-            grid[y][1] = '.';
-            grid[y][WIDTH - 2] = '.';
-        }
-
-        // Place 5 symmetric Relics (with Undead Guardians in League 3)
-        relics.clear();
-        int rid = 0;
-        int guardHp = (leagueLevel >= 3) ? 14 : 0;
-        relics.add(new Relic(rid++, mid, mid, 25, guardHp));
-        int[][] pairs = {{mid, 2}, {3, 2}};
-        for (int[] p : pairs) {
-            int rx = p[0], ry = p[1];
-            grid[ry][rx] = '.';
-            grid[HEIGHT - 1 - ry][WIDTH - 1 - rx] = '.';
-            relics.add(new Relic(rid++, rx, ry, 15, guardHp));
-            relics.add(new Relic(rid++, WIDTH - 1 - rx, HEIGHT - 1 - ry, 15, guardHp));
-        }
+        return true;
     }
 
     private void spawnParties() {
