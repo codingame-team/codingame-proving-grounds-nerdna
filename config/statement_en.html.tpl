@@ -1,0 +1,188 @@
+<!-- LEAGUES level1 level2 level3 -->
+<div id="statement_back" class="statement_back" style="display:none"></div>
+<div class="statement-body">
+  <!-- LEAGUE ALERT -->
+  <div style="color: #7cc576; background-color: rgba(124, 197, 118,.1); padding: 20px; margin-bottom: 15px; text-align: left">
+    <!-- BEGIN level1 -->
+    <p style="margin-bottom: 0"><b>Wood 2 League:</b> Command <b>2 FIGHTER heroes</b> to explore the dungeon, battle rival fighters, and collect unguarded Relic Chests. Additional hero classes and dungeon hazards will unlock in higher leagues.</p>
+    <!-- END -->
+    <!-- BEGIN level2 -->
+    <p style="margin-bottom: 0"><b>Wood 1 League:</b> Your party expands to <b>3 heroes (FIGHTER + MAGE + CLERIC)</b>, unlocking arcane <action>FIREBALL</action> and divine <action>HEAL</action> spells!</p>
+    <!-- END -->
+    <!-- BEGIN level3 -->
+    <p style="margin-bottom: 0"><b>Bronze+ League:</b> <b>Undead Guardians</b> (<const>14</const> HP) now protect every Relic Chest! Slay them first to claim the treasure and earn bonus points.</p>
+    <!-- END -->
+  </div>
+
+  <!-- GOAL -->
+  <div class="statement-section statement-goal">
+    <h1><span class="icon icon-goal">&nbsp;</span><span>The Goal</span></h1>
+    <div class="statement-goal-content">
+      <!-- BEGIN level1 -->
+      Command a tactical squad of <b>Fighters</b> in Nerdna's dungeon. Claim ancient Relic Chests and outscore the opposing squad over <const>100</const> turns.
+      <!-- END -->
+      <!-- BEGIN level2 -->
+      Command a full tactical RPG party (<b>Fighter</b>, <b>Mage</b>, <b>Cleric</b>) in Nerdna's dungeon. Claim ancient Relic Chests and outscore the opposing party over <const>100</const> turns.
+      <!-- END -->
+      <!-- BEGIN level3 -->
+      Command a full tactical RPG party (<b>Fighter</b>, <b>Mage</b>, <b>Cleric</b>) in Nerdna's dungeon. Defeat Undead Guardians, claim ancient Relic Chests, and outscore the opposing party over <const>100</const> turns.
+      <!-- END -->
+    </div>
+  </div>
+
+  <!-- RULES -->
+  <div class="statement-section statement-rules">
+    <h1><span class="icon icon-rules">&nbsp;</span><span>Rules</span></h1>
+    <div class="statement-rules-content">
+      <p>The battle takes place on a symmetric <const>11</const>&times;<const>11</const> dungeon grid where each cell is either:</p>
+      <ul>
+        <li><const>.</const> : Walkable stone floor tile.</li>
+        <li><const>#</const> : Indestructible dungeon pillar (impassable obstacle).</li>
+      </ul>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Hero Classes &amp; Abilities</h3>
+      <ul>
+        <li><b>FIGHTER</b> (<const>36</const> Max HP, <const>9</const> Base ATK): Frontline warrior.
+          <ul>
+            <li><action>SLASH targetId</action> (cooldown <const>1</const>, range <const>1</const>): Strikes an adjacent enemy hero with <var>heroId</var> = <var>targetId</var> for <const>9</const> damage (plus <const>+3</const> bonus score).</li>
+            <li><action>GUARD allyId</action> (cooldown <const>1</const>, range &le; <const>1</const>): Shields an adjacent friendly hero (or self), reducing all damage taken by that hero during the turn by <const>3</const> per damage instance.</li>
+          </ul>
+        </li>
+        <!-- BEGIN level2 level3 -->
+        <li class="statement-new-league-rule"><b>MAGE</b> (<const>22</const> Max HP, <const>4</const> Base ATK): Arcane spellcaster.
+          <ul>
+            <li><action>FIREBALL tx ty</action> (<i>MAHALITO</i>, cooldown <const>2</const>, range &le; <const>3</const>): Hurls an explosive fireball at target tile (<var>tx</var>, <var>ty</var>), dealing <const>8</const> AoE damage to all enemy heroes within Manhattan distance &le; <const>1</const> of (<var>tx</var>, <var>ty</var>). Awards <const>+2</const> score per enemy hero hit.</li>
+          </ul>
+        </li>
+        <li class="statement-new-league-rule"><b>CLERIC</b> (<const>28</const> Max HP, <const>6</const> Base ATK): Divine healer.
+          <ul>
+            <li><action>HEAL allyId</action> (<i>DIOS</i>, cooldown <const>2</const>, range &le; <const>3</const>): Restores <const>10</const> HP (up to Max HP) to a friendly hero within Manhattan distance &le; <const>3</const> (plus <const>+2</const> bonus score).</li>
+          </ul>
+        </li>
+        <!-- END -->
+      </ul>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Turn Resolution Order</h3>
+      <ol>
+        <li><b>Cooldown Tick &amp; Simultaneous Movement (<action>MOVE x y</action>):</b> All active cooldowns decrease by <const>1</const>. Each hero advances <const>1</const> orthogonal step along the shortest walkable path (BFS) toward (<var>x</var>, <var>y</var>). If two heroes attempt to enter the same tile or swap tiles, both stay in place.</li>
+        <li><b>Protective Stances (<action>GUARD</action>):</b> Fighter guard stances are applied before damage resolution.</li>
+        <!-- BEGIN level1 -->
+        <li><b>Melee Combat (<action>SLASH</action>):</b> Attacks resolve simultaneously. Eliminating an opposing hero awards <b>+<const>15</const> points</b>.</li>
+        <li><b>Relic Chests:</b> Stepping onto an uncollected Relic Chest collects it and awards its <var>relicValue</var> (<b>+<const>15</const></b> to <b>+<const>25</const> points</b>).</li>
+        <!-- END -->
+        <!-- BEGIN level2 -->
+        <li><b>Combat &amp; Spells (<action>SLASH</action>, <action>FIREBALL</action>, <action>HEAL</action>):</b> Attacks and spells resolve simultaneously. Eliminating an opposing hero awards <b>+<const>15</const> points</b>.</li>
+        <li><b>Relic Chests:</b> Stepping onto an uncollected Relic Chest collects it and awards its <var>relicValue</var> (<b>+<const>15</const></b> to <b>+<const>25</const> points</b>).</li>
+        <!-- END -->
+        <!-- BEGIN level3 -->
+        <li><b>Combat &amp; Spells (<action>SLASH</action>, <action>FIREBALL</action>, <action>HEAL</action>):</b> Attacks and spells resolve simultaneously. Eliminating an opposing hero awards <b>+<const>15</const> points</b>.</li>
+        <li class="statement-new-league-rule"><b>Undead Guardians &amp; Relic Chests:</b> Each uncollected Relic Chest is protected by an <b>Undead Guardian</b> (<var>guardianHp</var> = <const>14</const> HP). At the end of the turn, any hero at Manhattan distance &le; <const>1</const> from a guarded Relic automatically attacks its Guardian for their class Base ATK. Dealing the killing blow awards <b>+<const>10</const> points</b>. Once <var>guardianHp</var> = <const>0</const>, stepping directly onto the Relic tile collects it for its <var>relicValue</var> (<b>+<const>15</const></b> to <b>+<const>25</const> points</b>).</li>
+        <!-- END -->
+        <li><b>End of Game Bonus:</b> If all heroes of one player are eliminated, the match ends immediately and the surviving party receives <b>+<const>20</const> bonus points</b> per alive hero.</li>
+      </ol>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Viewer Debug Mode</h3>
+      <p>Use the <b>RENDER MODE</b> toggle in the viewer settings menu (gear icon) to switch dynamically between <b>RPG SPRITES</b> and <b>GEOMETRIC DEBUG</b>.</p>
+
+      <div class="statement-victory-conditions">
+        <div class="icon victory"></div>
+        <div class="blk">
+          <div class="title">Victory Conditions</div>
+          <div class="text"><ul style="padding-bottom:0"><li>Have a higher score than your opponent at the end of the game (after <const>100</const> turns or when one party is eliminated).</li></ul></div>
+        </div>
+      </div>
+      <div class="statement-lose-conditions">
+        <div class="icon lose"></div>
+        <div class="blk">
+          <div class="title">Defeat Conditions</div>
+          <div class="text"><ul style="padding-bottom:0"><li>Have a lower score than your opponent at the end of the game.</li><li>Your program times out or outputs an invalid command.</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROTOCOL -->
+  <div class="statement-section statement-protocol">
+    <h1><span class="icon icon-protocol">&nbsp;</span><span>Game Input</span></h1>
+    <div class="blk">
+      <div class="title">Initialization Input</div>
+      <div class="text">
+        <p><span class="statement-lineno">Line 1:</span> 3 space-separated integers <var>width</var>, <var>height</var> and <var>leagueLevel</var>, the dimensions of the dungeon grid (<const>11</const>&times;<const>11</const>) and the current league level (<const>1</const>, <const>2</const> or <const>3</const>).</p>
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Input for One Game Turn</div>
+      <div class="text">
+        <p><span class="statement-lineno"><var>height</var> lines:</span> a string <var>row</var> of length <var>width</var> representing one row of the dungeon (<const>.</const> for a walkable floor tile, <const>#</const> for an impassable pillar wall).</p>
+        <p><span class="statement-lineno">Next line:</span> an integer <var>heroCount</var>, the total number of alive heroes on the grid.</p>
+        <p><span class="statement-lineno">Next <var>heroCount</var> lines:</span> 7 space-separated values <var>heroId</var>, <var>owner</var>, <var>role</var>, <var>x</var>, <var>y</var>, <var>hp</var> and <var>cooldown</var>:</p>
+        <ul>
+          <li><var>heroId</var>: unique integer identifier of the hero.</li>
+          <li><var>owner</var>: <const>0</const> if the hero belongs to you (your heroes are always listed first), <const>1</const> if it belongs to your opponent.</li>
+          <!-- BEGIN level1 -->
+          <li><var>role</var>: string indicating the hero class (<const>FIGHTER</const>).</li>
+          <!-- END -->
+          <!-- BEGIN level2 level3 -->
+          <li><var>role</var>: string indicating the hero class (<const>FIGHTER</const>, <const>MAGE</const> or <const>CLERIC</const>).</li>
+          <!-- END -->
+          <li><var>x</var>, <var>y</var>: integer coordinates of the hero on the grid.</li>
+          <li><var>hp</var>: current Hit Points of the hero.</li>
+          <li><var>cooldown</var>: integer turns remaining before the hero's special ability is ready (<const>0</const> = ready).</li>
+        </ul>
+        <p><span class="statement-lineno">Next line:</span> an integer <var>relicCount</var>, the number of uncollected Relic Chests.</p>
+        <!-- BEGIN level1 level2 -->
+        <p><span class="statement-lineno">Next <var>relicCount</var> lines:</span> 5 space-separated integers <var>relicId</var>, <var>rx</var>, <var>ry</var>, <var>relicValue</var> and <var>guardianHp</var>, the unique ID, coordinates, victory point value, and guardian HP (always <const>0</const> in this league) of each Relic Chest.</p>
+        <!-- END -->
+        <!-- BEGIN level3 -->
+        <p><span class="statement-lineno">Next <var>relicCount</var> lines:</span> 5 space-separated integers <var>relicId</var>, <var>rx</var>, <var>ry</var>, <var>relicValue</var> and <var>guardianHp</var>, the unique ID, coordinates, victory point value, and remaining Undead Guardian HP (<const>0</const> if unguarded) of each Relic Chest.</p>
+        <!-- END -->
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Output for One Game Turn</div>
+      <div class="text">
+        <p><span class="statement-lineno">One line per alive hero you own</span> (in the exact order they appear in the input): a movement command optionally followed by a class ability:</p>
+        <ul>
+          <li><action>MOVE x y</action> (or <action>WAIT</action>) where <var>x</var> and <var>y</var> are target integer coordinates, optionally followed by:</li>
+          <li><action>SLASH targetId</action> (Fighter only, range <const>1</const>)</li>
+          <li><action>GUARD allyId</action> (Fighter only, range &le; <const>1</const>)</li>
+          <!-- BEGIN level2 level3 -->
+          <li><action>FIREBALL tx ty</action> (Mage only, range &le; <const>3</const>, cooldown <const>2</const>)</li>
+          <li><action>HEAL allyId</action> (Cleric only, range &le; <const>3</const>, cooldown <const>2</const>)</li>
+          <!-- END -->
+        </ul>
+        <!-- BEGIN level1 -->
+        <p>Example: <action>MOVE 5 5 SLASH 2</action></p>
+        <!-- END -->
+        <!-- BEGIN level2 level3 -->
+        <p>Example: <action>MOVE 5 5 FIREBALL 6 5</action></p>
+        <!-- END -->
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Constraints</div>
+      <div class="text">
+        <var>width</var> = <const>11</const>, <var>height</var> = <const>11</const><br>
+        <!-- BEGIN level1 -->
+        <const>1</const> &le; <var>heroCount</var> &le; <const>4</const><br>
+        <!-- END -->
+        <!-- BEGIN level2 level3 -->
+        <const>1</const> &le; <var>heroCount</var> &le; <const>6</const><br>
+        <!-- END -->
+        <const>0</const> &le; <var>relicCount</var> &le; <const>5</const><br>
+        Response time for the first turn &le; <const>1000</const> ms<br>
+        Response time per turn &le; <const>50</const> ms<br>
+        Maximum number of turns: <const>100</const>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOURCE CODE -->
+  <div class="statement-section statement-examples">
+    <h1><span class="icon icon-example">&nbsp;</span><span>Source Code</span></h1>
+    <div class="statement-examples-text">
+      The complete source code of the referee, Dual-Mode PixiJS viewer, and reference bots is available on GitHub:
+      <a href="https://github.com/codingame-team/codingame-proving-grounds-nerdna" target="_blank" rel="noopener noreferrer">https://github.com/codingame-team/codingame-proving-grounds-nerdna</a>
+    </div>
+  </div>
+</div>

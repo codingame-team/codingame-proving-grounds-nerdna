@@ -1,0 +1,188 @@
+<!-- LEAGUES level1 level2 level3 -->
+<div id="statement_back" class="statement_back" style="display:none"></div>
+<div class="statement-body">
+  <!-- LEAGUE ALERT -->
+  <div style="color: #7cc576; background-color: rgba(124, 197, 118,.1); padding: 20px; margin-bottom: 15px; text-align: left">
+    <!-- BEGIN level1 -->
+    <p style="margin-bottom: 0"><b>Ligue Bois 2 :</b> Contrôlez <b>2 héros FIGHTER</b> pour explorer le donjon, affronter les guerriers adverses et récupérer les Coffres de Reliques sans gardien. De nouvelles classes et dangers seront débloqués dans les ligues supérieures.</p>
+    <!-- END -->
+    <!-- BEGIN level2 -->
+    <p style="margin-bottom: 0"><b>Ligue Bois 1 :</b> Votre compagnie passe à <b>3 héros (FIGHTER + MAGE + CLERIC)</b>, débloquant les sorts <action>FIREBALL</action> et <action>HEAL</action> !</p>
+    <!-- END -->
+    <!-- BEGIN level3 -->
+    <p style="margin-bottom: 0"><b>Ligue Bronze+ :</b> Des <b>Gardiens Morts-Vivants</b> (<const>14</const> PV) défendent désormais chaque Coffre de Relique ! Terrassez-les d'abord pour récupérer le trésor et marquer des points bonus.</p>
+    <!-- END -->
+  </div>
+
+  <!-- GOAL -->
+  <div class="statement-section statement-goal">
+    <h1><span class="icon icon-goal">&nbsp;</span><span>Objectif</span></h1>
+    <div class="statement-goal-content">
+      <!-- BEGIN level1 -->
+      Dirigez une escouade de <b>Fighters</b> dans le donjon de Nerdna. Récupérez les Coffres de Reliques et obtenez un score supérieur à votre adversaire en <const>100</const> tours.
+      <!-- END -->
+      <!-- BEGIN level2 -->
+      Dirigez une compagnie RPG complète (<b>Fighter</b>, <b>Mage</b>, <b>Cleric</b>) dans le donjon de Nerdna. Récupérez les Coffres de Reliques et obtenez un score supérieur à la compagnie adverse en <const>100</const> tours.
+      <!-- END -->
+      <!-- BEGIN level3 -->
+      Dirigez une compagnie RPG complète (<b>Fighter</b>, <b>Mage</b>, <b>Cleric</b>) dans le donjon de Nerdna. Terrassez les Gardiens Morts-Vivants, récupérez les Coffres de Reliques et obtenez un score supérieur à la compagnie adverse en <const>100</const> tours.
+      <!-- END -->
+    </div>
+  </div>
+
+  <!-- RULES -->
+  <div class="statement-section statement-rules">
+    <h1><span class="icon icon-rules">&nbsp;</span><span>Règles</span></h1>
+    <div class="statement-rules-content">
+      <p>L'affrontement se déroule sur une grille de donjon symétrique <const>11</const>&times;<const>11</const> où chaque case possède l'un des états suivants :</p>
+      <ul>
+        <li><const>.</const> : Dalle de pierre praticable.</li>
+        <li><const>#</const> : Pilier indestructible du donjon (obstacle infranchissable).</li>
+      </ul>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Classes de Héros &amp; Compétences</h3>
+      <ul>
+        <li><b>FIGHTER</b> (<const>36</const> PV max, <const>9</const> ATQ de base) : Guerrier de première ligne.
+          <ul>
+            <li><action>SLASH targetId</action> (recharge <const>1</const>, portée <const>1</const>) : Frappe un héros ennemi adjacent d'identifiant <var>targetId</var> en lui infligeant <const>9</const> dégâts (octroie <const>+3</const> points de score).</li>
+            <li><action>GUARD allyId</action> (recharge <const>1</const>, portée &le; <const>1</const>) : Protège un héros allié adjacent (ou soi-même), réduisant tous les dégâts subis par ce héros durant le tour de <const>3</const> par attaque.</li>
+          </ul>
+        </li>
+        <!-- BEGIN level2 level3 -->
+        <li class="statement-new-league-rule"><b>MAGE</b> (<const>22</const> PV max, <const>4</const> ATQ de base) : Mage arcanique.
+          <ul>
+            <li><action>FIREBALL tx ty</action> (<i>MAHALITO</i>, recharge <const>2</const>, portée &le; <const>3</const>) : Lance une boule de feu explosive sur la case (<var>tx</var>, <var>ty</var>), infligeant <const>8</const> dégâts de zone (AoE) à tous les héros ennemis situés à une distance de Manhattan &le; <const>1</const> de (<var>tx</var>, <var>ty</var>). Octroie <const>+2</const> points par héros ennemi touché.</li>
+          </ul>
+        </li>
+        <li class="statement-new-league-rule"><b>CLERIC</b> (<const>28</const> PV max, <const>6</const> ATQ de base) : Clerc guérisseur.
+          <ul>
+            <li><action>HEAL allyId</action> (<i>DIOS</i>, recharge <const>2</const>, portée &le; <const>3</const>) : Restaure <const>10</const> PV (jusqu'aux PV max) à un héros allié situé à une distance de Manhattan &le; <const>3</const> (octroie <const>+2</const> points de score).</li>
+          </ul>
+        </li>
+        <!-- END -->
+      </ul>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Ordre de Résolution d'un Tour</h3>
+      <ol>
+        <li><b>Décrémentation des Recharges &amp; Déplacement Simultané (<action>MOVE x y</action>) :</b> Les temps de recharge actifs diminuent de <const>1</const>. Chaque héros avance de <const>1</const> case orthogonalement le long du plus court chemin praticable (BFS) vers (<var>x</var>, <var>y</var>). Si deux héros tentent d'entrer sur la même case ou d'échanger leurs cases, aucun des deux ne bouge.</li>
+        <li><b>Postures Défensives (<action>GUARD</action>) :</b> Les postures de garde des Fighters sont appliquées avant la résolution des dégâts.</li>
+        <!-- BEGIN level1 -->
+        <li><b>Combat au Corps-à-Corps (<action>SLASH</action>) :</b> Les attaques sont résolues simultanément. Éliminer un héros adverse rapporte <b>+<const>15</const> points</b>.</li>
+        <li><b>Coffres de Reliques :</b> Entrer sur la case d'un Coffre de Relique non collecté le ramasse immédiatement et rapporte sa valeur <var>relicValue</var> (<b>+<const>15</const></b> à <b>+<const>25</const> points</b>).</li>
+        <!-- END -->
+        <!-- BEGIN level2 -->
+        <li><b>Combats &amp; Sorts (<action>SLASH</action>, <action>FIREBALL</action>, <action>HEAL</action>) :</b> Les attaques et incantations sont résolues simultanément. Éliminer un héros adverse rapporte <b>+<const>15</const> points</b>.</li>
+        <li><b>Coffres de Reliques :</b> Entrer sur la case d'un Coffre de Relique non collecté le ramasse immédiatement et rapporte sa valeur <var>relicValue</var> (<b>+<const>15</const></b> à <b>+<const>25</const> points</b>).</li>
+        <!-- END -->
+        <!-- BEGIN level3 -->
+        <li><b>Combats &amp; Sorts (<action>SLASH</action>, <action>FIREBALL</action>, <action>HEAL</action>) :</b> Les attaques et incantations sont résolues simultanément. Éliminer un héros adverse rapporte <b>+<const>15</const> points</b>.</li>
+        <li class="statement-new-league-rule"><b>Gardiens Morts-Vivants &amp; Coffres de Reliques :</b> Chaque Coffre de Relique non collecté est défendu par un <b>Gardien Mort-Vivant</b> (<var>guardianHp</var> = <const>14</const> PV). À la fin du tour, tout héros à distance de Manhattan &le; <const>1</const> d'une Relique gardée attaque automatiquement son Gardien avec son ATQ de base. Porter le coup fatal rapporte <b>+<const>10</const> points</b>. Dès que <var>guardianHp</var> = <const>0</const>, entrer sur la case du coffre récupère la Relique pour sa valeur <var>relicValue</var> (<b>+<const>15</const></b> à <b>+<const>25</const> points</b>).</li>
+        <!-- END -->
+        <li><b>Bonus de Fin de Partie :</b> Si tous les héros d'un joueur sont éliminés, la partie s'arrête immédiatement et le survivant reçoit <b>+<const>20</const> points bonus</b> par héros encore en vie.</li>
+      </ol>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Mode Debug du Viewer</h3>
+      <p>Utilisez l'option <b>RENDER MODE</b> dans le menu des paramètres du lecteur (icône engrenage) pour basculer dynamiquement entre <b>RPG SPRITES</b> et <b>GEOMETRIC DEBUG</b>.</p>
+
+      <div class="statement-victory-conditions">
+        <div class="icon victory"></div>
+        <div class="blk">
+          <div class="title">Conditions de Victoire</div>
+          <div class="text"><ul style="padding-bottom:0"><li>Vous avez plus de points que votre adversaire à la fin de la partie (après <const>100</const> tours ou lorsqu'une compagnie est éliminée).</li></ul></div>
+        </div>
+      </div>
+      <div class="statement-lose-conditions">
+        <div class="icon lose"></div>
+        <div class="blk">
+          <div class="title">Conditions de Défaite</div>
+          <div class="text"><ul style="padding-bottom:0"><li>Vous avez moins de points que votre adversaire à la fin de la partie.</li><li>Votre programme ne répond pas dans le temps imparti ou affiche une commande invalide.</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROTOCOL -->
+  <div class="statement-section statement-protocol">
+    <h1><span class="icon icon-protocol">&nbsp;</span><span>Entrées &amp; Sorties du Jeu</span></h1>
+    <div class="blk">
+      <div class="title">Entrées d'Initialisation</div>
+      <div class="text">
+        <p><span class="statement-lineno">Ligne 1 :</span> 3 entiers séparés par des espaces <var>width</var>, <var>height</var> et <var>leagueLevel</var>, la largeur et la hauteur du donjon (<const>11</const>&times;<const>11</const>) ainsi que le niveau de la ligue actuelle (<const>1</const>, <const>2</const> ou <const>3</const>).</p>
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Entrées pour un Tour de Jeu</div>
+      <div class="text">
+        <p><span class="statement-lineno"><var>height</var> lignes :</span> une chaîne de caractères <var>row</var> de longueur <var>width</var> représentant une ligne du donjon (<const>.</const> pour une dalle praticable, <const>#</const> pour un pilier infranchissable).</p>
+        <p><span class="statement-lineno">Ligne suivante :</span> un entier <var>heroCount</var>, le nombre total de héros en vie sur la grille.</p>
+        <p><span class="statement-lineno">Les <var>heroCount</var> lignes suivantes :</span> 7 valeurs séparées par des espaces <var>heroId</var>, <var>owner</var>, <var>role</var>, <var>x</var>, <var>y</var>, <var>hp</var> et <var>cooldown</var> :</p>
+        <ul>
+          <li><var>heroId</var> : identifiant entier unique du héros.</li>
+          <li><var>owner</var> : <const>0</const> si le héros vous appartient (vos héros sont toujours listés en premier), <const>1</const> s'il appartient à votre adversaire.</li>
+          <!-- BEGIN level1 -->
+          <li><var>role</var> : chaîne indiquant la classe du héros (<const>FIGHTER</const>).</li>
+          <!-- END -->
+          <!-- BEGIN level2 level3 -->
+          <li><var>role</var> : chaîne indiquant la classe du héros (<const>FIGHTER</const>, <const>MAGE</const> ou <const>CLERIC</const>).</li>
+          <!-- END -->
+          <li><var>x</var>, <var>y</var> : coordonnées entières du héros sur la grille.</li>
+          <li><var>hp</var> : points de vie actuels du héros.</li>
+          <li><var>cooldown</var> : nombre de tours restants avant que la compétence spéciale du héros soit prête (<const>0</const> = prête).</li>
+        </ul>
+        <p><span class="statement-lineno">Ligne suivante :</span> un entier <var>relicCount</var>, le nombre de Coffres de Reliques non collectés.</p>
+        <!-- BEGIN level1 level2 -->
+        <p><span class="statement-lineno">Les <var>relicCount</var> lignes suivantes :</span> 5 entiers séparés par des espaces <var>relicId</var>, <var>rx</var>, <var>ry</var>, <var>relicValue</var> et <var>guardianHp</var>, l'identifiant unique, les coordonnées, la valeur en points et les PV du gardien (toujours <const>0</const> dans cette ligue) de chaque Coffre de Relique.</p>
+        <!-- END -->
+        <!-- BEGIN level3 -->
+        <p><span class="statement-lineno">Les <var>relicCount</var> lignes suivantes :</span> 5 entiers séparés par des espaces <var>relicId</var>, <var>rx</var>, <var>ry</var>, <var>relicValue</var> et <var>guardianHp</var>, l'identifiant unique, les coordonnées, la valeur en points et les PV restants du Gardien Mort-Vivant (<const>0</const> si non gardé) de chaque Coffre de Relique.</p>
+        <!-- END -->
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Sortie pour un Tour de Jeu</div>
+      <div class="text">
+        <p><span class="statement-lineno">Une ligne par héros en vie que vous possédez</span> (dans l'ordre exact où ils apparaissent en entrée) : une commande de déplacement éventuellement suivie d'une compétence de classe :</p>
+        <ul>
+          <li><action>MOVE x y</action> (ou <action>WAIT</action>) où <var>x</var> et <var>y</var> sont les coordonnées entières cibles, éventuellement suivi de :</li>
+          <li><action>SLASH targetId</action> (Fighter uniquement, portée <const>1</const>)</li>
+          <li><action>GUARD allyId</action> (Fighter uniquement, portée &le; <const>1</const>)</li>
+          <!-- BEGIN level2 level3 -->
+          <li><action>FIREBALL tx ty</action> (Mage uniquement, portée &le; <const>3</const>, recharge <const>2</const>)</li>
+          <li><action>HEAL allyId</action> (Cleric uniquement, portée &le; <const>3</const>, recharge <const>2</const>)</li>
+          <!-- END -->
+        </ul>
+        <!-- BEGIN level1 -->
+        <p>Exemple : <action>MOVE 5 5 SLASH 2</action></p>
+        <!-- END -->
+        <!-- BEGIN level2 level3 -->
+        <p>Exemple : <action>MOVE 5 5 FIREBALL 6 5</action></p>
+        <!-- END -->
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Contraintes</div>
+      <div class="text">
+        <var>width</var> = <const>11</const>, <var>height</var> = <const>11</const><br>
+        <!-- BEGIN level1 -->
+        <const>1</const> &le; <var>heroCount</var> &le; <const>4</const><br>
+        <!-- END -->
+        <!-- BEGIN level2 level3 -->
+        <const>1</const> &le; <var>heroCount</var> &le; <const>6</const><br>
+        <!-- END -->
+        <const>0</const> &le; <var>relicCount</var> &le; <const>5</const><br>
+        Temps de réponse pour le premier tour &le; <const>1000</const> ms<br>
+        Temps de réponse par tour &le; <const>50</const> ms<br>
+        Nombre maximum de tours : <const>100</const>
+      </div>
+    </div>
+  </div>
+
+  <!-- CODE SOURCE -->
+  <div class="statement-section statement-examples">
+    <h1><span class="icon icon-example">&nbsp;</span><span>Code Source</span></h1>
+    <div class="statement-examples-text">
+      Le code source complet de l'arbitre (Referee), du viewer PixiJS Dual-Mode et des bots de référence est disponible sur GitHub :
+      <a href="https://github.com/codingame-team/codingame-proving-grounds-nerdna" target="_blank" rel="noopener noreferrer">https://github.com/codingame-team/codingame-proving-grounds-nerdna</a>
+    </div>
+  </div>
+</div>
