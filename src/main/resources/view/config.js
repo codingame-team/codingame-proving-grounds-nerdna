@@ -15,7 +15,7 @@ export const playerColors = [
     '#22a1e4'  // Player 1: Azure Covenant
 ];
 
-export const gameName = 'ProvingGroundsWerdna';
+export const gameName = 'ProvingGroundsNerdna';
 export const overlayAlpha = 0;
 
 export const options = [

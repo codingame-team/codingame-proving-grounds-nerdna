@@ -21,7 +21,7 @@ public class Main {
         MultiplayerGameRunner gameRunner = new MultiplayerGameRunner();
         gameRunner.setLeagueLevel(3);
         gameRunner.setSeed(42L);
-        gameRunner.addAgent(Agent1.class, "WerdnaPartyAI");
+        gameRunner.addAgent(Agent1.class, "NerdnaPartyAI");
         gameRunner.addAgent(Agent2.class, "DungeonBoss");
 
         gameRunner.start(8888);
@@ -71,7 +71,7 @@ public class Main {
                 MultiplayerGameRunner runner = new MultiplayerGameRunner();
                 runner.setLeagueLevel(league);
                 runner.setSeed(1000L * league + i);
-                runner.addAgent(Agent1.class, "WerdnaPartyAI");
+                runner.addAgent(Agent1.class, "NerdnaPartyAI");
                 runner.addAgent(Agent2.class, "DungeonBoss");
 
                 GameResult result = runner.simulate();
@@ -81,10 +81,10 @@ public class Main {
                 else if (s1 > s0) p1Wins++;
                 else draws++;
 
-                System.out.printf("[League %d | Seed %d] WerdnaPartyAI=%d vs DungeonBoss=%d (Frames=%d)%n",
+                System.out.printf("[League %d | Seed %d] NerdnaPartyAI=%d vs DungeonBoss=%d (Frames=%d)%n",
                     league, 1000L * league + i, s0, s1, result.views.size());
             }
-            System.out.printf("==> League %d Summary: WerdnaPartyAI Wins=%d, DungeonBoss Wins=%d, Draws=%d%n%n",
+            System.out.printf("==> League %d Summary: NerdnaPartyAI Wins=%d, DungeonBoss Wins=%d, Draws=%d%n%n",
                 league, p0Wins, p1Wins, draws);
         }
     }

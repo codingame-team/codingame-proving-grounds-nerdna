@@ -169,7 +169,7 @@ public class Referee extends AbstractReferee {
             .setLineColor(0x4a5568)
             .setZIndex(-15);
 
-        graphicEntityModule.createText("PROVING GROUNDS OF WERDNA")
+        graphicEntityModule.createText("PROVING GROUNDS OF NERDNA")
             .setX(960)
             .setY(40)
             .setAnchor(0.5)

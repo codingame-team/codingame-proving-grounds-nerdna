@@ -8,7 +8,7 @@ loop relicCount read relicId:int rx:int ry:int relicValue:int guardianHp:int
 write join("MOVE", "5", "5")
 
 STATEMENT
-Command your tactical RPG party (Fighter, Mage, Cleric) in Werdna's Proving Grounds! Defeat Undead Guardians, claim ancient Relics, and vanquish the opposing party.
+Command your tactical RPG party (Fighter, Mage, Cleric) in Nerdna's Proving Grounds! Defeat Undead Guardians, claim ancient Relics, and vanquish the opposing party.
 
 INPUT
 width: Width of the dungeon grid (11)

@@ -1,7 +1,7 @@
 import java.util.*;
 
 /**
- * Tactical RPG Party AI for Proving Grounds of Werdna:
+ * Tactical RPG Party AI for Proving Grounds of Nerdna:
  * - Coordinates Fighter (frontline SLASH + GUARD), Mage (AoE FIREBALL / MAHALITO),
  *   and Cleric (HEAL / DIOS on injured party members)
  */
