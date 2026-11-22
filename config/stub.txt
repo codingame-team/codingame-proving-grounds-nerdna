@@ -1,0 +1,34 @@
+read width:int height:int leagueLevel:int
+gameloop
+loop height read row:word(16)
+read heroCount:int
+loop heroCount read heroId:int owner:int role:word(12) x:int y:int hp:int cooldown:int
+read relicCount:int
+loop relicCount read relicId:int rx:int ry:int relicValue:int guardianHp:int
+write join("MOVE", "5", "5")
+
+STATEMENT
+Command your tactical RPG party (Fighter, Mage, Cleric) in Werdna's Proving Grounds! Defeat Undead Guardians, claim ancient Relics, and vanquish the opposing party.
+
+INPUT
+width: Width of the dungeon grid (11)
+height: Height of the dungeon grid (11)
+leagueLevel: Current league level (1=Wood 2, 2=Wood 1, 3=Bronze+)
+row: One row of the dungeon ('.'=floor, '#'=pillar wall)
+heroCount: Total number of alive heroes
+heroId: Unique identifier of the hero
+owner: 0 if your hero (listed first), 1 if opponent hero
+role: Hero class (FIGHTER, MAGE, CLERIC)
+x: X coordinate of the hero
+y: Y coordinate of the hero
+hp: Current Hit Points of the hero
+cooldown: Turns remaining before special spell is ready
+relicCount: Number of uncollected Relic Chests
+relicId: Unique ID of the Relic Chest
+rx: X coordinate of the Relic Chest
+ry: Y coordinate of the Relic Chest
+relicValue: Victory points awarded upon collecting this Relic
+guardianHp: Remaining HP of the Undead Guardian protecting this Relic (0 if unguarded)
+
+OUTPUT
+One line per alive owned hero: MOVE <x> <y> [SLASH <targetId> | FIREBALL <tx> <ty> | HEAL <allyId> | GUARD <allyId>]
