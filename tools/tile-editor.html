@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RPG Tile &amp; Thin-Wall Maze Editor — CodinGame SDK Puzzles</title>
+  <style>
+    :root {
+      --bg: #0f121d;
+      --panel: #171c2c;
+      --panel-2: #1f263b;
+      --border: #2e3854;
+      --text: #e6ecf5;
+      --muted: #93a1be;
+      --accent: #f6ad55;
+      --accent-2: #63b3ed;
+      --ok: #48bb78;
+      --err: #f56565;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    header {
+      background: linear-gradient(135deg, #161b2e 0%, #1d243c 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    header .sub {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .back-link {
+      color: var(--accent-2);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+    .back-link:hover { border-color: var(--accent-2); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 310px 1fr 340px;
+      gap: 16px;
+      padding: 16px 20px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    @media (max-width: 1180px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+    }
+    label.field {
+      display: block;
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    select, input[type="number"], textarea {
+      width: 100%;
+      margin-top: 4px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+    textarea {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.78rem;
+      min-height: 220px;
+      resize: vertical;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    button {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+    button:hover { border-color: var(--accent-2); background: #26304d; }
+    button.primary {
+      background: #2b6cb0;
+      border-color: #4299e1;
+      color: #fff;
+    }
+    button.primary:hover { background: #3182ce; }
+    button.active {
+      background: rgba(246, 173, 85, 0.18);
+      border-color: var(--accent);
+      color: #fbd38d;
+    }
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .palette button {
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+    }
+    .swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.25);
+      flex-shrink: 0;
+    }
+    .canvas-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    canvas {
+      background: #10131e;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      cursor: crosshair;
+      max-width: 100%;
+      height: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    }
+    .status-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .badge.ok { background: rgba(72, 187, 120, 0.18); color: #68d391; border: 1px solid #48bb78; }
+    .badge.err { background: rgba(245, 101, 101, 0.18); color: #fc8181; border: 1px solid #f56565; }
+    .hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: rgba(99, 179, 237, 0.08);
+      border-left: 3px solid var(--accent-2);
+      padding: 8px 10px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      margin: 8px 0;
+      cursor: pointer;
+    }
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .tabs button { flex: 1; font-size: 0.78rem; padding: 6px 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>🗺️ RPG Tile &amp; Thin-Wall Maze Editor</h1>
+      <div class="sub">Open-Field Boulders · Dungeon Masonry · Directional Thin-Wall Labyrinth (N=1, E=2, S=4, W=8) + Live BFS Validator</div>
+    </div>
+    <a class="back-link" href="./index.html">← Back to Puzzles Showcase</a>
+  </header>
+
+  <main class="layout">
+    <!-- Left Controls -->
+    <section class="card">
+      <h2>1. Puzzle &amp; Sprite Bank</h2>
+      <label class="field">
+        RPG Puzzle Target
+        <select id="puzzleSelect">
+          <option value="overlords-labyrinth">Overlord's Labyrinth (11×11 Thin-Wall Maze)</option>
+          <option value="proving-grounds-nerdna">Proving Grounds of Nerdna (11×11 Open-Field Boulders)</option>
+          <option value="ultima-dungeon-delver">Ultima: Dungeon Delver (13×11 Dungeon Masonry)</option>
+        </select>
+      </label>
+
+      <label class="field">
+        Sprite Bank (CC0 Deployment Config)
+        <select id="packSelect">
+          <option value="kenney-tiny-dungeon">kenney-tiny-dungeon (Kenney Tiny Dungeon + Boulders, CC0)</option>
+          <option value="kenney-1bit-retro">kenney-1bit-retro (Kenney 1-Bit Pack Retro, CC0)</option>
+          <option value="kenney-roguelike-field">kenney-roguelike-field (Kenney Roguelike Field + Mossy Boulders, CC0)</option>
+          <option value="legacy-dark-stone">legacy-dark-stone (Legacy Dark Stone Backup)</option>
+        </select>
+      </label>
+
+      <label class="check-row">
+        <input type="checkbox" id="symmetryChk" checked />
+        180° Rotational Symmetry (PvP fairness)
+      </label>
+      <label class="check-row">
+        <input type="checkbox" id="debugModeChk" />
+        Debug / Vector Mode (toggle off for RPG Sprites)
+      </label>
+
+      <h2 style="margin-top:16px">2. Brush &amp; Tools</h2>
+      <div id="modeHint" class="hint"></div>
+      <div id="palette" class="palette"></div>
+
+      <div class="btn-row">
+        <button id="btnGen" class="primary">🎲 Procedural Seed</button>
+        <button id="btnClear">🧹 Clear</button>
+      </div>
+    </section>
+
+    <!-- Center Canvas -->
+    <section class="card canvas-wrap">
+      <div class="status-bar">
+        <span id="bfsBadge" class="badge ok">✅ Connected</span>
+        <span id="hoverInfo" style="color:var(--muted)">Hover over grid to inspect cell / wall bitmask</span>
+      </div>
+      <canvas id="boardCanvas" width="700" height="700"></canvas>
+      <div class="sub" style="font-size:0.8rem; color:var(--muted)">
+        Tip: In <b>Overlord's Labyrinth</b>, click near the North, East, South, or West edge of any cell to toggle a directional thin wall.
+      </div>
+    </section>
+
+    <!-- Right Export / Import -->
+    <section class="card">
+      <h2>3. Export &amp; Config</h2>
+      <div class="tabs">
+        <button id="tabMap" class="active">Map Data</button>
+        <button id="tabJava">Java Code</button>
+        <button id="tabPack">sprite-pack.json</button>
+      </div>
+      <textarea id="exportArea" spellcheck="false"></textarea>
+      <div class="btn-row">
+        <button id="btnCopy" class="primary">📋 Copy</button>
+        <button id="btnDownload">💾 Download</button>
+        <button id="btnImport">📥 Import Map</button>
+      </div>
+      <p style="font-size:0.78rem; color:var(--muted); margin-top:12px;">
+        Apply sprite pack in CLI:<br/>
+        <code>python3 scripts/apply_sprite_pack.py &lt;pack-name&gt;</code>
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const WALL_N = 1, WALL_E = 2, WALL_S = 4, WALL_W = 8;
+    const DX = [0, 1, 0, -1], DY = [-1, 0, 1, 0];
+
+    const PACK_THEMES = {
+      'kenney-tiny-dungeon': {
+        floor1: '#6e5c4e', floor2: '#635245', wallFill: '#a89682', wallStroke: '#2b211a',
+        boulderFill: '#b59d82', boulderStroke: '#4a3a2a', desc: 'Kenney Tiny Dungeon + Roguelike Sandstone Boulders (CC0 1.0)'
+      },
+      'kenney-1bit-retro': {
+        floor1: '#1d2233', floor2: '#23293d', wallFill: '#7890a8', wallStroke: '#0d1018',
+        boulderFill: '#8b9bb4', boulderStroke: '#181425', desc: 'Kenney 1-Bit Pack Colored Retro RPG Tiles (CC0 1.0)'
+      },
+      'kenney-roguelike-field': {
+        floor1: '#4d6b47', floor2: '#44603f', wallFill: '#8c9689', wallStroke: '#1f291e',
+        boulderFill: '#7e8a7d', boulderStroke: '#2a3329', desc: 'Kenney Roguelike/RPG Open Field & Mossy Boulders (CC0 1.0)'
+      },
+      'legacy-dark-stone': {
+        floor1: '#232736', floor2: '#1d202d', wallFill: '#4a5568', wallStroke: '#12151f',
+        boulderFill: '#4a5568', boulderStroke: '#1a202c', desc: 'Original Legacy Dark Stone Sprites (Backup)'
+      }
+    };
+
+    const PUZZLES = {
+      'overlords-labyrinth': {
+        name: "Overlord's Labyrinth",
+        width: 11, height: 11,
+        mode: 'thin-walls',
+        hint: 'Click near any <b>cell edge (N/E/S/W)</b> to toggle a thin wall partition, or pick Pentagram to place summoning runes. BFS checks edge-aware connectivity.',
+        tools: [
+          { id: 'thinwall', label: 'Thin Wall Edge', color: '#cbd5e0' },
+          { id: 'pentagram', label: 'Pentagram Rune', color: '#9f7aea' }
+        ]
+      },
+      'proving-grounds-nerdna': {
+        name: 'Proving Grounds of Nerdna',
+        width: 11, height: 11,
+        mode: 'open-field',
+        hint: 'Open-field tactical arena: place natural <b>Boulders (#)</b> as cover and <b>Relics (R)</b>. Perimeter stays open or bordered; BFS ensures all party spawns connect.',
+        tools: [
+          { id: '#', label: 'Boulder (#)', color: '#b59d82' },
+          { id: '.', label: 'Open Ground (.)', color: '#5c6b4d' },
+          { id: 'R', label: 'Relic (R)', color: '#f6e05e' }
+        ]
+      },
+      'ultima-dungeon-delver': {
+        name: 'Ultima: Dungeon Delver',
+        width: 13, height: 11,
+        mode: 'dungeon-blocks',
+        hint: 'Classic solo dungeon: paint masonry <b>Walls (#)</b>, <b>Hero (@)</b>, <b>Exit (E)</b>, <b>Chests (C)</b>, <b>Potions (P)</b>, <b>Monsters (M)</b>, <b>Traps (T)</b>, and <b>Keys (K)</b>.',
+        tools: [
+          { id: '#', label: 'Masonry Wall (#)', color: '#718096' },
+          { id: '.', label: 'Dungeon Floor (.)', color: '#5e5044' },
+          { id: '@', label: 'Hero Start (@)', color: '#63b3ed' },
+          { id: 'E', label: 'Exit Stairs (E)', color: '#48bb78' },
+          { id: 'C', label: 'Chest (C)', color: '#f6e05e' },
+          { id: 'P', label: 'Potion (P)', color: '#fc8181' },
+          { id: 'M', label: 'Monster (M)', color: '#ed8936' },
+          { id: 'T', label: 'Trap (T)', color: '#b794f4' },
+          { id: 'K', label: 'Key (K)', color: '#fbd38d' }
+        ]
+      }
+    };
+
+    let currentPuzzle = 'overlords-labyrinth';
+    let currentPack = 'kenney-tiny-dungeon';
+    let currentTool = 'thinwall';
+    let exportTab = 'map';
+    let wallMask = [];
+    let grid = [];
+    let pentagrams = [];
+    let reachable = [];
+
+    const canvas = document.getElementById('boardCanvas');
+    const ctx = canvas.getContext('2d');
+    const puzzleSelect = document.getElementById('puzzleSelect');
+    const packSelect = document.getElementById('packSelect');
+    const symmetryChk = document.getElementById('symmetryChk');
+    const debugModeChk = document.getElementById('debugModeChk');
+    const exportArea = document.getElementById('exportArea');
+    const bfsBadge = document.getElementById('bfsBadge');
+    const hoverInfo = document.getElementById('hoverInfo');
+
+    function initState(generate = true) {
+      const cfg = PUZZLES[currentPuzzle];
+      symmetryChk.checked = (cfg.mode !== 'dungeon-blocks');
+      currentTool = cfg.tools[0].id;
+      buildPalette();
+      if (generate) generateProcedural();
+      else clearMap();
+      render();
+    }
+
+    function buildPalette() {
+      const cfg = PUZZLES[currentPuzzle];
+      document.getElementById('modeHint').innerHTML = cfg.hint;
+      const pal = document.getElementById('palette');
+      pal.innerHTML = '';
+      cfg.tools.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = (t.id === currentTool) ? 'active' : '';
+        btn.innerHTML = `<span class="swatch" style="background:${t.color}"></span><span>${t.label}</span>`;
+        btn.onclick = () => {
+          currentTool = t.id;
+          buildPalette();
+        };
+        pal.appendChild(btn);
+      });
+    }
+
+    function clearMap() {
+      const cfg = PUZZLES[currentPuzzle];
+      const W = cfg.width, H = cfg.height;
+      if (cfg.mode === 'thin-walls') {
+        wallMask = Array.from({ length: H }, (_, y) =>
+          Array.from({ length: W }, (_, x) =>
+            (y === 0 ? WALL_N : 0) | (y === H - 1 ? WALL_S : 0) |
+            (x === 0 ? WALL_W : 0) | (x === W - 1 ? WALL_E : 0)
+          )
+        );
+        pentagrams = [[2,2],[2,8],[5,5],[8,2],[8,8]];
+      } else {
+        grid = Array.from({ length: H }, (_, y) =>
+          Array.from({ length: W }, (_, x) =>
+            (cfg.mode === 'dungeon-blocks' && (x === 0 || x === W - 1 || y === 0 || y === H - 1)) ? '#' : '.'
+          )
+        );
+        if (cfg.mode === 'dungeon-blocks') {
+          grid[1][1] = '@';
+          grid[H - 2][W - 2] = 'E';
+        }
+      }
+      validateBFS();
+      updateExport();
+      render();
+    }
+
+    function setThinWall(x, y, dir, on) {
+      const cfg = PUZZLES[currentPuzzle];
+      const W = cfg.width, H = cfg.height;
+      const bit = 1 << dir;
+      const oppBit = 1 << ((dir + 2) % 4);
+      const nx = x + DX[dir], ny = y + DY[dir];
+      if (on) wallMask[y][x] |= bit; else wallMask[y][x] &= ~bit;
+      if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
+        if (on) wallMask[ny][nx] |= oppBit; else wallMask[ny][nx] &= ~oppBit;
+      }
+    }
+
+    function generateProcedural() {
+      clearMap();
+      const cfg = PUZZLES[currentPuzzle];
+      const W = cfg.width, H = cfg.height;
+      if (cfg.mode === 'thin-walls') {
+        for (let i = 0; i < 24; i++) {
+          const x = Math.floor(Math.random() * W);
+          const y = Math.floor(Math.random() * H);
+          const d = Math.floor(Math.random() * 4);
+          const nx = x + DX[d], ny = y + DY[d];
+          if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
+          const prevA = wallMask[y][x], prevB = wallMask[ny][nx];
+          const sx = W - 1 - x, sy = H - 1 - y, sd = (d + 2) % 4;
+          const snx = sx + DX[sd], sny = sy + DY[sd];
+          const prevC = wallMask[sy][sx], prevD = wallMask[sny][snx];
+
+          setThinWall(x, y, d, true);
+          if (symmetryChk.checked) setThinWall(sx, sy, sd, true);
+          if (!validateBFS().ok) {
+            wallMask[y][x] = prevA; wallMask[ny][nx] = prevB;
+            wallMask[sy][sx] = prevC; wallMask[sny][snx] = prevD;
+          }
+        }
+      } else if (cfg.mode === 'open-field') {
+        const reserved = new Set(['1,3','1,5','1,7','9,3','9,5','9,7','5,5']);
+        for (let i = 0; i < 12; i++) {
+          const x = 1 + Math.floor(Math.random() * (W - 2));
+          const y = 1 + Math.floor(Math.random() * (H - 2));
+          const sx = W - 1 - x, sy = H - 1 - y;
+          if (reserved.has(`${x},${y}`) || reserved.has(`${sx},${sy}`)) continue;
+          grid[y][x] = '#';
+          if (symmetryChk.checked) grid[sy][sx] = '#';
+          if (!validateBFS().ok) {
+            grid[y][x] = '.';
+            if (symmetryChk.checked) grid[sy][sx] = '.';
+          }
+        }
+        [[5,2],[5,8],[5,5]].forEach(([rx, ry]) => { if (grid[ry][rx] === '.') grid[ry][rx] = 'R'; });
+      } else {
+        for (let i = 0; i < 24; i++) {
+          const x = 2 + Math.floor(Math.random() * (W - 4));
+          const y = 1 + Math.floor(Math.random() * (H - 2));
+          if (grid[y][x] !== '.') continue;
+          grid[y][x] = '#';
+          if (!validateBFS().ok) grid[y][x] = '.';
+        }
+        const extras = ['C','C','P','M','M','T','K'];
+        extras.forEach(ch => {
+          for (let tries = 0; tries < 40; tries++) {
+            const x = 1 + Math.floor(Math.random() * (W - 2));
+            const y = 1 + Math.floor(Math.random() * (H - 2));
+            if (grid[y][x] === '.') { grid[y][x] = ch; break; }
+          }
+        });
+      }
+      validateBFS();
+      updateExport();
+      render();
+    }
+
+    function validateBFS() {
+      const cfg = PUZZLES[currentPuzzle];
+      const W = cfg.width, H = cfg.height;
+      reachable = Array.from({ length: H }, () => Array(W).fill(false));
+      let sx = 1, sy = 5, totalWalkable = 0;
+
+      if (cfg.mode === 'thin-walls') {
+        totalWalkable = W * H;
+        sx = 1; sy = 5;
+      } else {
+        let foundStart = false;
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            if (grid[y][x] !== '#') {
+              totalWalkable++;
+              if (grid[y][x] === '@' || (!foundStart && x === 1 && y === 5)) {
+                sx = x; sy = y; foundStart = true;
+              } else if (!foundStart) {
+                sx = x; sy = y;
+              }
+            }
+          }
+        }
+      }
+
+      const q = [[sx, sy]];
+      reachable[sy][sx] = true;
+      let count = 0;
+      while (q.length) {
+        const [cx, cy] = q.shift();
+        count++;
+        for (let d = 0; d < 4; d++) {
+          if (cfg.mode === 'thin-walls' && (wallMask[cy][cx] & (1 << d)) !== 0) continue;
+          const nx = cx + DX[d], ny = cy + DY[d];
+          if (nx < 0 || nx >= W || ny < 0 || ny >= H || reachable[ny][nx]) continue;
+          if (cfg.mode !== 'thin-walls' && grid[ny][nx] === '#') continue;
+          reachable[ny][nx] = true;
+          q.push([nx, ny]);
+        }
+      }
+
+      const ok = count === totalWalkable;
+      bfsBadge.className = 'badge ' + (ok ? 'ok' : 'err');
+      bfsBadge.textContent = ok
+        ? `✅ 100% Connected (${count}/${totalWalkable} cells)`
+        : `⚠️ Disconnected (${totalWalkable - count} unreachable cells)`;
+      return { ok, count, totalWalkable };
+    }
+
+    function getCellSize() {
+      const cfg = PUZZLES[currentPuzzle];
+      return Math.floor(Math.min(660 / cfg.width, 660 / cfg.height));
+    }
+
+    function render() {
+      const cfg = PUZZLES[currentPuzzle];
+      const W = cfg.width, H = cfg.height;
+      const cs = getCellSize();
+      const pad = 20;
+      canvas.width = W * cs + pad * 2;
+      canvas.height = H * cs + pad * 2;
+
+      const theme = PACK_THEMES[currentPack];
+      const dbg = debugModeChk.checked;
+
+      ctx.fillStyle = '#0e111b';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw cells
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          const px = pad + x * cs, py = pad + y * cs;
+          const isAlt = (x + y) % 2 === 0;
+          ctx.fillStyle = dbg ? '#151824' : (isAlt ? theme.floor1 : theme.floor2);
+          ctx.fillRect(px, py, cs, cs);
+          ctx.strokeStyle = dbg ? '#23283b' : 'rgba(0,0,0,0.18)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(px, py, cs, cs);
+
+          if (cfg.mode !== 'thin-walls') {
+            const ch = grid[y][x];
+            if (ch === '#') {
+              if (cfg.mode === 'open-field') {
+                // Draw natural rounded boulder on open ground
+                ctx.fillStyle = dbg ? '#4a5568' : theme.boulderFill;
+                ctx.strokeStyle = dbg ? '#90cdf4' : theme.boulderStroke;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.ellipse(px + cs / 2, py + cs / 2 + 2, cs * 0.36, cs * 0.31, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(255,255,255,0.16)';
+                ctx.beginPath();
+                ctx.ellipse(px + cs * 0.42, py + cs * 0.4, cs * 0.14, cs * 0.1, -0.4, 0, Math.PI * 2);
+                ctx.fill();
+              } else {
+                // Masonry dungeon block
+                ctx.fillStyle = dbg ? '#3b4252' : theme.wallFill;
+                ctx.fillRect(px + 2, py + 2, cs - 4, cs - 4);
+                ctx.strokeStyle = dbg ? '#81a1c1' : theme.wallStroke;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(px + 2, py + 2, cs - 4, cs - 4);
+              }
+            } else if (ch !== '.') {
+              const colors = { '@':'#63b3ed', 'E':'#48bb78', 'C':'#f6e05e', 'P':'#fc8181', 'M':'#ed8936', 'T':'#b794f4', 'K':'#fbd38d', 'R':'#f6e05e' };
+              ctx.fillStyle = colors[ch] || '#fff';
+              ctx.beginPath();
+              ctx.arc(px + cs / 2, py + cs / 2, cs * 0.28, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.fillStyle = '#0f121d';
+              ctx.font = `bold ${Math.floor(cs * 0.34)}px sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(ch, px + cs / 2, py + cs / 2 + 1);
+            }
+          }
+
+          // Unreachable BFS overlay
+          if ((cfg.mode === 'thin-walls' || grid[y][x] !== '#') && !reachable[y][x]) {
+            ctx.fillStyle = 'rgba(245, 101, 101, 0.38)';
+            ctx.fillRect(px + 2, py + 2, cs - 4, cs - 4);
+          }
+        }
+      }
+
+      // Draw Thin Walls & Pentagrams/Sanctums for Overlord's Labyrinth
+      if (cfg.mode === 'thin-walls') {
+        // Sanctums
+        [[1, 5, '#4299e1', 'S0'], [9, 5, '#f56565', 'S1']].forEach(([sx, sy, col, lbl]) => {
+          const px = pad + sx * cs + cs / 2, py = pad + sy * cs + cs / 2;
+          ctx.fillStyle = col;
+          ctx.globalAlpha = 0.28;
+          ctx.beginPath(); ctx.arc(px, py, cs * 0.38, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = 1;
+          ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.stroke();
+          ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(lbl, px, py);
+        });
+
+        // Pentagrams
+        pentagrams.forEach(([px0, py0]) => {
+          const px = pad + px0 * cs + cs / 2, py = pad + py0 * cs + cs / 2;
+          ctx.strokeStyle = '#9f7aea'; ctx.lineWidth = 2.5;
+          ctx.fillStyle = 'rgba(159, 122, 234, 0.28)';
+          ctx.beginPath(); ctx.arc(px, py, cs * 0.28, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = '#e9d8fd'; ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('★', px, py + 1);
+        });
+
+        // Thin directional wall bars
+        const t = dbg ? 5 : 8;
+        ctx.fillStyle = dbg ? '#63b3ed' : theme.wallFill;
+        ctx.strokeStyle = dbg ? '#1a365d' : theme.wallStroke;
+        ctx.lineWidth = 1.5;
+
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            const m = wallMask[y][x];
+            const left = pad + x * cs, top = pad + y * cs;
+            const drawBar = (bx, by, bw, bh) => {
+              ctx.fillRect(bx, by, bw, bh);
+              ctx.strokeRect(bx, by, bw, bh);
+            };
+            if (y === 0 && (m & WALL_N)) drawBar(left - t/2, top - t/2, cs + t, t);
+            if (m & WALL_S) drawBar(left - t/2, top + cs - t/2, cs + t, t);
+            if (x === 0 && (m & WALL_W)) drawBar(left - t/2, top - t/2, t, cs + t);
+            if (m & WALL_E) drawBar(left + cs - t/2, top - t/2, t, cs + t);
+          }
+        }
+      }
+    }
+
+    function updateExport() {
+      const cfg = PUZZLES[currentPuzzle];
+      const W = cfg.width, H = cfg.height;
+      if (exportTab === 'pack') {
+        const packJson = {
+          puzzle: currentPuzzle,
+          activePack: currentPack,
+          packs: Object.fromEntries(
+            Object.entries(PACK_THEMES).map(([k, v]) => [k, { description: v.desc, license: k === 'legacy-dark-stone' ? 'Project Original' : 'CC0 1.0 Public Domain' }])
+          )
+        };
+        exportArea.value = JSON.stringify(packJson, null, 2);
+        return;
+      }
+
+      if (cfg.mode === 'thin-walls') {
+        const hexRows = wallMask.map(row => row.map(v => v.toString(16).toUpperCase()).join(''));
+        if (exportTab === 'map') {
+          exportArea.value = `# Overlord's Labyrinth Thin-Wall Hex Grid (N=1, E=2, S=4, W=8)\n` + hexRows.join('\n');
+        } else {
+          exportArea.value = `String[] hexMaze = {\n` + hexRows.map(r => `    "${r}"`).join(',\n') + `\n};`;
+        }
+      } else {
+        const asciiRows = grid.map(r => r.join(''));
+        if (exportTab === 'map') {
+          if (cfg.mode === 'dungeon-blocks') {
+            const testJson = {
+              title: { "2": "Custom Dungeon Map" },
+              testIn: `${W} ${H} 25\n` + asciiRows.join('\n'),
+              isTest: "true", isValidator: "true"
+            };
+            exportArea.value = JSON.stringify(testJson, null, 2);
+          } else {
+            exportArea.value = asciiRows.join('\n');
+          }
+        } else {
+          exportArea.value = `String[] customGrid = {\n` + asciiRows.map(r => `    "${r}"`).join(',\n') + `\n};`;
+        }
+      }
+    }
+
+    canvas.addEventListener('mousemove', e => {
+      const cfg = PUZZLES[currentPuzzle];
+      const cs = getCellSize(), pad = 20;
+      const rect = canvas.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) * (canvas.width / rect.width) - pad;
+      const my = (e.clientY - rect.top) * (canvas.height / rect.height) - pad;
+      const x = Math.floor(mx / cs), y = Math.floor(my / cs);
+      if (x < 0 || x >= cfg.width || y < 0 || y >= cfg.height) return;
+      if (cfg.mode === 'thin-walls') {
+        const m = wallMask[y][x];
+        hoverInfo.textContent = `Cell (${x}, ${y}) | Hex: ${m.toString(16).toUpperCase()} (N=${m&1?1:0} E=${m&2?1:0} S=${m&4?1:0} W=${m&8?1:0})`;
+      } else {
+        hoverInfo.textContent = `Cell (${x}, ${y}) | Tile: '${grid[y][x]}'`;
+      }
+    });
+
+    canvas.addEventListener('click', e => {
+      const cfg = PUZZLES[currentPuzzle];
+      const W = cfg.width, H = cfg.height;
+      const cs = getCellSize(), pad = 20;
+      const rect = canvas.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) * (canvas.width / rect.width) - pad;
+      const my = (e.clientY - rect.top) * (canvas.height / rect.height) - pad;
+      const x = Math.floor(mx / cs), y = Math.floor(my / cs);
+      if (x < 0 || x >= W || y < 0 || y >= H) return;
+
+      if (cfg.mode === 'thin-walls') {
+        if (currentTool === 'pentagram') {
+          const idx = pentagrams.findIndex(([px, py]) => px === x && py === y);
+          if (idx >= 0) pentagrams.splice(idx, 1);
+          else pentagrams.push([x, y]);
+        } else {
+          // Determine nearest edge (N=0, E=1, S=2, W=3)
+          const fx = (mx - x * cs) / cs, fy = (my - y * cs) / cs;
+          const dists = [fy, 1 - fx, 1 - fy, fx];
+          let dir = 0;
+          for (let d = 1; d < 4; d++) if (dists[d] < dists[dir]) dir = d;
+          const nx = x + DX[dir], ny = y + DY[dir];
+          if (nx < 0 || nx >= W || ny < 0 || ny >= H) return; // keep outer perimeter closed
+          const nextState = (wallMask[y][x] & (1 << dir)) === 0;
+          setThinWall(x, y, dir, nextState);
+          if (symmetryChk.checked) {
+            setThinWall(W - 1 - x, H - 1 - y, (dir + 2) % 4, nextState);
+          }
+        }
+      } else {
+        if (currentTool === '@' || currentTool === 'E') {
+          for (let yy = 0; yy < H; yy++)
+            for (let xx = 0; xx < W; xx++)
+              if (grid[yy][xx] === currentTool) grid[yy][xx] = '.';
+        }
+        grid[y][x] = currentTool;
+        if (symmetryChk.checked && cfg.mode === 'open-field') {
+          grid[H - 1 - y][W - 1 - x] = currentTool;
+        }
+      }
+      validateBFS();
+      updateExport();
+      render();
+    });
+
+    puzzleSelect.onchange = () => { currentPuzzle = puzzleSelect.value; initState(true); };
+    packSelect.onchange = () => { currentPack = packSelect.value; updateExport(); render(); };
+    debugModeChk.onchange = render;
+    document.getElementById('btnGen').onclick = generateProcedural;
+    document.getElementById('btnClear').onclick = clearMap;
+
+    ['tabMap', 'tabJava', 'tabPack'].forEach(id => {
+      document.getElementById(id).onclick = () => {
+        exportTab = id === 'tabMap' ? 'map' : (id === 'tabJava' ? 'java' : 'pack');
+        ['tabMap', 'tabJava', 'tabPack'].forEach(tid => document.getElementById(tid).className = (tid === id ? 'active' : ''));
+        updateExport();
+      };
+    });
+
+    document.getElementById('btnCopy').onclick = () => {
+      navigator.clipboard.writeText(exportArea.value);
+      const b = document.getElementById('btnCopy');
+      b.textContent = '✅ Copied!';
+      setTimeout(() => b.textContent = '📋 Copy', 1200);
+    };
+
+    document.getElementById('btnDownload').onclick = () => {
+      const ext = exportTab === 'pack' ? 'json' : (exportTab === 'java' ? 'java' : 'txt');
+      const name = exportTab === 'pack' ? 'sprite-pack.json' : `${currentPuzzle}-map.${ext}`;
+      const blob = new Blob([exportArea.value], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
+    };
+
+    document.getElementById('btnImport').onclick = () => {
+      const cfg = PUZZLES[currentPuzzle];
+      const raw = exportArea.value.trim();
+      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+      if (cfg.mode === 'thin-walls' && lines.length >= cfg.height) {
+        for (let y = 0; y < cfg.height; y++) {
+          for (let x = 0; x < cfg.width; x++) {
+            wallMask[y][x] = parseInt(lines[y][x], 16) || 0;
+          }
+        }
+      } else if (cfg.mode !== 'thin-walls' && lines.length >= cfg.height) {
+        for (let y = 0; y < cfg.height; y++) {
+          for (let x = 0; x < cfg.width; x++) {
+            grid[y][x] = lines[y][x] || '.';
+          }
+        }
+      }
+      validateBFS();
+      render();
+    };
+
+    initState(true);
+  </script>
+</body>
+</html>

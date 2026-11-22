@@ -1,0 +1,31 @@
+{
+  "puzzle": "proving-grounds-nerdna",
+  "obstacleMode": "open-field-boulder",
+  "activePack": "kenney-tiny-dungeon",
+  "packs": {
+    "kenney-tiny-dungeon": {
+      "name": "Kenney Tiny Dungeon (CC0)",
+      "license": "CC0 1.0 Universal",
+      "source": "https://kenney.nl/assets/tiny-dungeon",
+      "description": "Warm sandstone dungeon tiles, crisp 16x16 pixel-art RPG classes & open-field boulders."
+    },
+    "kenney-1bit-retro": {
+      "name": "Kenney 1-Bit Pack Colored (CC0)",
+      "license": "CC0 1.0 Universal",
+      "source": "https://kenney.nl/assets/1-bit-pack",
+      "description": "Classic 1980s Wizardry/Ultima retro 1-bit colored dungeon aesthetic on dark slate."
+    },
+    "kenney-roguelike-field": {
+      "name": "Kenney Roguelike/RPG Field & Boulders (CC0)",
+      "license": "CC0 1.0 Universal",
+      "source": "https://kenney.nl/assets/roguelike-rpg-pack",
+      "description": "Mossy cobblestone terrain, natural outdoor mossy boulders, and RPG props."
+    },
+    "legacy-dark-stone": {
+      "name": "Legacy Dark Stone Backup",
+      "license": "CodinGame SDK Assets (Backup)",
+      "source": "backup from git HEAD~1",
+      "description": "Original dark-stone dungeon floor & pillar sprite set backed up before CC0 upgrade."
+    }
+  }
+}
